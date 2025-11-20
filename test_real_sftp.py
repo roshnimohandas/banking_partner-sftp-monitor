@@ -23,11 +23,20 @@ def test_sftp_connection():
     username = os.getenv('SFTP_USERNAME')
     password = os.getenv('SFTP_PASSWORD')
 
+    if not all([host, username, password]):
+        print("\n❌ Error: SFTP credentials not found in .env file!")
+        print("\nPlease create .env file with:")
+        print("SFTP_HOST=103.183.96.21")
+        print("SFTP_PORT=2022")
+        print("SFTP_USERNAME=srv.42cssmtp")
+        print("SFTP_PASSWORD=D]kjPL8Ccy6uGx3R")
+        return
+
     print(f"\n📡 Connection Details:")
     print(f"   Host: {host}")
     print(f"   Port: {port}")
     print(f"   Username: {username}")
-    print(f"   Password: {'*' * len(password)}")
+    print(f"   Password: {'*' * len(password) if password else 'NOT SET'}")
 
     print(f"\n🔌 Attempting to connect...")
 

@@ -251,7 +251,15 @@ def monitor_sftp(host, port, username, password, remote_path, partner):
         client = SFTPClient(host=host, port=port, username=username, password=password)
 
         if not client.connect():
-            print("❌ Failed to connect to SFTP server")
+            print("\n❌ Failed to connect to SFTP server")
+            print("\n🔍 Troubleshooting:")
+            print("   1. Check if server is reachable:")
+            print(f"      ping {host}")
+            print("   2. Test port connectivity:")
+            print(f"      telnet {host} {port}")
+            print("   3. Verify credentials are correct")
+            print("   4. Check if your IP is whitelisted on the server")
+            print("   5. Try using FileZilla/WinSCP to test manually")
             return
 
         print("✅ Connected successfully!")
@@ -310,14 +318,49 @@ def monitor_sftp(host, port, username, password, remote_path, partner):
         print(f"\n❌ Error: {str(e)}")
 
 if __name__ == "__main__":
-    # Get configuration from .env
-    host = os.getenv('SFTP_HOST', 'localhost')
-    port = int(os.getenv('SFTP_PORT', 2222))
-    username = os.getenv('SFTP_USERNAME', 'testuser')
-    password = os.getenv('SFTP_PASSWORD', 'testpass')
+    import argparse
+
+    # Parse command line arguments
+    parser = argparse.ArgumentParser(description='Monitor SFTP server and send email alerts')
+    parser.add_argument('--path', '-p', default='/',
+                        help='Remote path to monitor (default: /)')
+    parser.add_argument('--partner', default='PARTNER_A',
+                        choices=['PARTNER_A', 'PARTNER_B', 'GENERIC'],
+                        help='Banking partner code (default: PARTNER_A)')
+    parser.add_argument('--host', help='SFTP host (overrides .env)')
+    parser.add_argument('--port', type=int, help='SFTP port (overrides .env)')
+    parser.add_argument('--username', help='SFTP username (overrides .env)')
+    parser.add_argument('--password', help='SFTP password (overrides .env)')
+
+    args = parser.parse_args()
+
+    # Get configuration from .env or command line
+    host = args.host or os.getenv('SFTP_HOST', 'localhost')
+    port = args.port or int(os.getenv('SFTP_PORT', 22))
+    username = args.username or os.getenv('SFTP_USERNAME')
+    password = args.password or os.getenv('SFTP_PASSWORD')
+
+    # Validate required fields
+    if not all([host, username, password]):
+        print("❌ Error: Missing SFTP credentials!")
+        print("\nPlease either:")
+        print("1. Set credentials in .env file:")
+        print("   SFTP_HOST=103.183.96.21")
+        print("   SFTP_PORT=2022")
+        print("   SFTP_USERNAME=srv.42cssmtp")
+        print("   SFTP_PASSWORD=your-password")
+        print("\n2. Or pass them as arguments:")
+        print("   python send_sftp_alert.py --host 103.183.96.21 --port 2022 --username srv.42cssmtp --password 'pass'")
+        sys.exit(1)
 
     # Monitor settings
-    remote_path = '/upload'  # Change this to your SFTP path
-    partner = 'PARTNER_A'     # Change to PARTNER_A or PARTNER_B
+    remote_path = args.path
+    partner = args.partner
+
+    print(f"\n📋 Configuration:")
+    print(f"   SFTP: {username}@{host}:{port}")
+    print(f"   Path: {remote_path}")
+    print(f"   Partner: {partner}")
+    print()
 
     monitor_sftp(host, port, username, password, remote_path, partner)
