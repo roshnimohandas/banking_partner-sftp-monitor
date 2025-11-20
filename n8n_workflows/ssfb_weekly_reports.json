@@ -1,0 +1,294 @@
+{
+  "name": "SSFB Weekly Reports Monitor",
+  "nodes": [
+    {
+      "parameters": {
+        "rule": {
+          "interval": [
+            {
+              "field": "cronExpression",
+              "expression": "0 9 * * 1"
+            }
+          ]
+        }
+      },
+      "id": "schedule-trigger",
+      "name": "Schedule (Monday 9 AM IST)",
+      "type": "n8n-nodes-base.scheduleTrigger",
+      "typeVersion": 1.1,
+      "position": [250, 300]
+    },
+    {
+      "parameters": {
+        "values": {
+          "string": [
+            {
+              "name": "partner",
+              "value": "SSFB"
+            },
+            {
+              "name": "current_time",
+              "value": "={{ $now.toFormat('HH:mm') }}"
+            },
+            {
+              "name": "current_date",
+              "value": "={{ $now.toFormat('yyyyMMdd') }}"
+            },
+            {
+              "name": "expected_time",
+              "value": "09:00"
+            },
+            {
+              "name": "report_type",
+              "value": "TRANSACTION_MASTER"
+            }
+          ]
+        }
+      },
+      "id": "set-variables",
+      "name": "Set Variables",
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.2,
+      "position": [450, 300]
+    },
+    {
+      "parameters": {
+        "protocol": "sftp",
+        "host": "={{ $env.SFTP_SSFB_HOST }}",
+        "port": 22,
+        "username": "={{ $env.SFTP_SSFB_USERNAME }}",
+        "password": "={{ $env.SFTP_SSFB_PASSWORD }}",
+        "operation": "list",
+        "path": "/sftp/ssfb/transaction_master/"
+      },
+      "id": "check-transaction-master",
+      "name": "Check Transaction Master",
+      "type": "n8n-nodes-base.ftp",
+      "typeVersion": 1,
+      "position": [650, 300]
+    },
+    {
+      "parameters": {
+        "functionCode": "const items = $input.all();\nconst currentDate = $('Set Variables').item.json.current_date;\nconst partner = $('Set Variables').item.json.partner;\nconst reportType = $('Set Variables').item.json.report_type;\n\nconst expectedPattern = new RegExp(`^${partner}_${reportType}_${currentDate}\\\\.csv$`);\n\nconst validFiles = items.filter(item => {\n  const filename = item.json.name;\n  const fileAge = (Date.now() - new Date(item.json.modifyTime)) / (1000 * 60 * 60);\n  return expectedPattern.test(filename) && item.json.size > 0 && fileAge <= 24;\n});\n\nif (validFiles.length > 0) {\n  const file = validFiles[0].json;\n  return [{\n    json: {\n      file_found: true,\n      filename: file.name,\n      size: file.size,\n      size_mb: (file.size / 1024 / 1024).toFixed(2),\n      modified_time: new Date(file.modifyTime).toISOString(),\n      actual_time: new Date(file.modifyTime).toLocaleTimeString('en-IN', { timeZone: 'Asia/Kolkata' }),\n      report_type: reportType,\n      partner: partner,\n      validation: 'Valid',\n      status: '✅ On Time'\n    }\n  }];\n} else {\n  return [{\n    json: {\n      file_found: false,\n      filename: `${partner}_${reportType}_${currentDate}.csv`,\n      size: 0,\n      size_mb: '0',\n      modified_time: null,\n      actual_time: '-',\n      report_type: reportType,\n      partner: partner,\n      validation: 'Missing',\n      status: '❌ Missing'\n    }\n  }];\n}"
+      },
+      "id": "validate-file",
+      "name": "Validate Transaction Master",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [850, 300]
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "boolean": [
+            {
+              "value1": "={{ $json.file_found }}",
+              "value2": true
+            }
+          ]
+        }
+      },
+      "id": "check-if-valid",
+      "name": "File Valid?",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 1,
+      "position": [1050, 300]
+    },
+    {
+      "parameters": {
+        "channel": "#42cards-data-ops",
+        "text": "=✅ {{ $json.partner }} {{ $json.report_type }} received - {{ $json.size_mb }} MB\n\n📁 File: {{ $json.filename }}\n⏰ Received at: {{ $json.actual_time }}\n📅 Weekly Report (Monday)\n✅ Status: Valid",
+        "otherOptions": {}
+      },
+      "id": "slack-success",
+      "name": "Slack Success Alert",
+      "type": "n8n-nodes-base.slack",
+      "typeVersion": 2.1,
+      "position": [1250, 200],
+      "credentials": {
+        "slackApi": {
+          "id": "1",
+          "name": "Slack API"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "channel": "#42cards-data-ops",
+        "text": "=@channel ❌ {{ $json.partner }} {{ $json.report_type }} MISSING\n\n📁 Expected File: {{ $json.filename }}\n📅 Expected Day: Monday\n⏰ Expected at: {{ $('Set Variables').item.json.expected_time }}\n🕐 Current Time: {{ $('Set Variables').item.json.current_time }}\n❌ Status: File Not Found\n\n⚠️ Action Required: Please check the SFTP server",
+        "otherOptions": {}
+      },
+      "id": "slack-error",
+      "name": "Slack Error Alert (@channel)",
+      "type": "n8n-nodes-base.slack",
+      "typeVersion": 2.1,
+      "position": [1250, 400],
+      "credentials": {
+        "slackApi": {
+          "id": "1",
+          "name": "Slack API"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "fromEmail": "={{ $env.EMAIL_FROM }}",
+        "toEmail": "={{ $env.EMAIL_TO }}",
+        "subject": "=🚨 URGENT: {{ $json.partner }} Weekly Report Missing",
+        "emailFormat": "html",
+        "text": "=<h2>🚨 Weekly Report Missing Alert</h2>\n<p><strong>Partner:</strong> {{ $json.partner }}</p>\n<p><strong>Report Type:</strong> {{ $json.report_type }}</p>\n<p><strong>Expected File:</strong> {{ $json.filename }}</p>\n<p><strong>Expected Day:</strong> Monday</p>\n<p><strong>Expected Time:</strong> {{ $('Set Variables').item.json.expected_time }}</p>\n<p><strong>Current Time:</strong> {{ $('Set Variables').item.json.current_time }}</p>\n<p><strong>Status:</strong> ❌ File Not Found</p>\n<hr>\n<p><strong>Action Required:</strong> Please check the SFTP server and verify file delivery.</p>\n<p><strong>SFTP Path:</strong> /sftp/ssfb/transaction_master/</p>"
+      },
+      "id": "email-alert",
+      "name": "Email Data Team",
+      "type": "n8n-nodes-base.emailSend",
+      "typeVersion": 2,
+      "position": [1250, 500],
+      "credentials": {
+        "smtp": {
+          "id": "2",
+          "name": "SMTP"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "authentication": "serviceAccount",
+        "resource": "sheet",
+        "operation": "appendOrUpdate",
+        "documentId": {
+          "__rl": true,
+          "value": "={{ $env.GOOGLE_SHEET_ID }}",
+          "mode": "id"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": "Tracking",
+          "mode": "name"
+        },
+        "dataMode": "autoMapInputData",
+        "options": {
+          "dataLocationOnSheet": "append"
+        }
+      },
+      "id": "log-to-sheet",
+      "name": "Log to Google Sheets",
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.4,
+      "position": [1450, 300],
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "3",
+          "name": "Google Sheets"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "functionCode": "const item = $input.first();\nconst expectedTime = $('Set Variables').item.json.expected_time;\nconst currentDate = $('Set Variables').item.json.current_date;\n\nreturn [{\n  json: {\n    date: `${currentDate.slice(0,4)}-${currentDate.slice(4,6)}-${currentDate.slice(6,8)}`,\n    partner: item.json.partner,\n    report_type: item.json.report_type,\n    expected_time: expectedTime,\n    actual_time: item.json.actual_time,\n    status: item.json.status,\n    size: item.json.size_mb + ' MB',\n    alerts_sent: item.json.file_found ? '0' : '2',\n    filename: item.json.filename,\n    validation: item.json.validation\n  }\n}];"
+      },
+      "id": "prepare-sheet-data",
+      "name": "Prepare Sheet Data",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [1250, 300]
+    }
+  ],
+  "connections": {
+    "Schedule (Monday 9 AM IST)": {
+      "main": [
+        [
+          {
+            "node": "Set Variables",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Set Variables": {
+      "main": [
+        [
+          {
+            "node": "Check Transaction Master",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Check Transaction Master": {
+      "main": [
+        [
+          {
+            "node": "Validate Transaction Master",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Validate Transaction Master": {
+      "main": [
+        [
+          {
+            "node": "File Valid?",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "File Valid?": {
+      "main": [
+        [
+          {
+            "node": "Slack Success Alert",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Prepare Sheet Data",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Slack Error Alert (@channel)",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Email Data Team",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Prepare Sheet Data",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Prepare Sheet Data": {
+      "main": [
+        [
+          {
+            "node": "Log to Google Sheets",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "staticData": null,
+  "tags": [],
+  "triggerCount": 1,
+  "updatedAt": "2025-11-20T00:00:00.000Z",
+  "versionId": "1"
+}

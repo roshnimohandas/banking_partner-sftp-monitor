@@ -1,0 +1,129 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>42Cards - SFTP File Monitor</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/dashboard.css') }}">
+    <script src="https://cdn.socket.io/4.5.4/socket.io.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>🏦 42Cards SFTP File Monitor</h1>
+            <div class="header-status">
+                <span id="connection-status" class="status-badge">Disconnected</span>
+                <span id="last-check">Never</span>
+            </div>
+        </header>
+
+        <div class="grid">
+            <!-- Connection Panel -->
+            <div class="card">
+                <h2>SFTP Connection</h2>
+                <form id="connection-form">
+                    <div class="form-group">
+                        <label for="connection-name">Connection Name</label>
+                        <input type="text" id="connection-name" placeholder="e.g., CUB_PROD" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="host">SFTP Host</label>
+                        <input type="text" id="host" placeholder="sftp.example.com" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="port">Port</label>
+                        <input type="number" id="port" value="22" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="username">Username</label>
+                        <input type="text" id="username" placeholder="username" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="password">Password</label>
+                        <input type="password" id="password" placeholder="password">
+                    </div>
+                    <button type="submit" class="btn btn-primary">Connect</button>
+                </form>
+            </div>
+
+            <!-- Monitor Panel -->
+            <div class="card">
+                <h2>File Monitoring</h2>
+                <form id="monitor-form">
+                    <div class="form-group">
+                        <label for="monitor-connection">Connection</label>
+                        <select id="monitor-connection" required>
+                            <option value="">Select connection...</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label for="remote-path">Remote Path</label>
+                        <input type="text" id="remote-path" placeholder="/incoming" value="." required>
+                    </div>
+                    <div class="form-group">
+                        <label for="partner">Banking Partner</label>
+                        <select id="partner" required>
+                            <option value="GENERIC">Generic</option>
+                            <option value="CUB">City Union Bank (CUB)</option>
+                            <option value="SSFB">Suryoday Small Finance Bank (SSFB)</option>
+                        </select>
+                    </div>
+                    <button type="submit" class="btn btn-success">Start Monitoring</button>
+                </form>
+
+                <div id="monitoring-results" style="display: none;">
+                    <h3>Monitoring Summary</h3>
+                    <div class="stats">
+                        <div class="stat-card">
+                            <div class="stat-value" id="total-files">0</div>
+                            <div class="stat-label">Total Files</div>
+                        </div>
+                        <div class="stat-card valid">
+                            <div class="stat-value" id="valid-files">0</div>
+                            <div class="stat-label">Valid Files</div>
+                        </div>
+                        <div class="stat-card invalid">
+                            <div class="stat-value" id="invalid-files">0</div>
+                            <div class="stat-label">Invalid Files</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Files Table -->
+            <div class="card full-width">
+                <h2>Files</h2>
+                <div class="table-container">
+                    <table id="files-table">
+                        <thead>
+                            <tr>
+                                <th>Status</th>
+                                <th>Filename</th>
+                                <th>Size</th>
+                                <th>Modified</th>
+                                <th>Validation</th>
+                            </tr>
+                        </thead>
+                        <tbody id="files-tbody">
+                            <tr>
+                                <td colspan="5" class="no-data">No files monitored yet</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+            <!-- Alerts Panel -->
+            <div class="card full-width">
+                <h2>Recent Alerts</h2>
+                <div id="alerts-container">
+                    <p class="no-data">No alerts</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="{{ url_for('static', filename='js/dashboard.js') }}"></script>
+</body>
+</html>

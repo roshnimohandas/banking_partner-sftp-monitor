@@ -1,0 +1,45 @@
+# n8n Environment Variables
+# Copy this file to .env in your n8n installation directory
+
+# Database (for n8n to store workflows)
+DB_TYPE=sqlite
+DB_SQLITE_DATABASE=database.sqlite
+
+# n8n Configuration
+N8N_BASIC_AUTH_ACTIVE=true
+N8N_BASIC_AUTH_USER=admin
+N8N_BASIC_AUTH_PASSWORD=change-this-password
+
+# Timezone
+GENERIC_TIMEZONE=Asia/Kolkata
+
+# SFTP Credentials - CUB
+SFTP_CUB_HOST=sftp.cub.example.com
+SFTP_CUB_PORT=22
+SFTP_CUB_USERNAME=cub_user
+SFTP_CUB_PASSWORD=cub_password
+
+# SFTP Credentials - SSFB
+SFTP_SSFB_HOST=sftp.ssfb.example.com
+SFTP_SSFB_PORT=22
+SFTP_SSFB_USERNAME=ssfb_user
+SFTP_SSFB_PASSWORD=ssfb_password
+
+# Slack
+SLACK_BOT_TOKEN=xoxb-your-slack-bot-token
+SLACK_CUB_CHANNEL=cub-alerts
+SLACK_SSFB_CHANNEL=ssfb-alerts
+
+# Email
+EMAIL_FROM=alerts@42cards.com
+EMAIL_TO=admin@42cards.com,finance@42cards.com
+EMAIL_SMTP_HOST=smtp.gmail.com
+EMAIL_SMTP_PORT=587
+EMAIL_SMTP_USER=alerts@42cards.com
+EMAIL_SMTP_PASSWORD=your-app-password
+
+# Webhook
+WEBHOOK_URL=https://your-webhook-endpoint.com/alerts
+
+# Execution Mode
+EXECUTIONS_MODE=regular

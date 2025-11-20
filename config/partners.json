@@ -1,0 +1,117 @@
+{
+  "partners": [
+    {
+      "id": "CUB",
+      "name": "City Union Bank",
+      "description": "City Union Bank file processing",
+      "sftp": {
+        "host": "sftp.cub.example.com",
+        "port": 22,
+        "username": "cub_user",
+        "remote_paths": [
+          "/incoming/transactions",
+          "/incoming/settlements",
+          "/incoming/reports"
+        ]
+      },
+      "file_patterns": {
+        "transaction": "CUB_YYYYMMDD_HHMMSS_TRANSACTION.csv",
+        "settlement": "CUB_YYYYMMDD_HHMMSS_SETTLEMENT.csv",
+        "report": "CUB_YYYYMMDD_HHMMSS_REPORT.csv"
+      },
+      "validation": {
+        "regex": "^CUB_\\d{8}_\\d{6}_(TRANSACTION|SETTLEMENT|REPORT)\\.csv$",
+        "min_size_bytes": 100,
+        "max_size_bytes": 104857600,
+        "max_age_hours": 24,
+        "expected_extensions": [".csv"]
+      },
+      "schedule": {
+        "check_interval_minutes": 15,
+        "expected_files": [
+          {
+            "name": "TRANSACTION",
+            "frequency": "daily",
+            "expected_time": "09:00"
+          },
+          {
+            "name": "SETTLEMENT",
+            "frequency": "daily",
+            "expected_time": "18:00"
+          },
+          {
+            "name": "REPORT",
+            "frequency": "weekly",
+            "expected_time": "10:00",
+            "expected_day": "Monday"
+          }
+        ]
+      },
+      "alerts": {
+        "slack_channel": "#cub-alerts",
+        "email_recipients": ["admin@42cards.com", "finance@42cards.com"],
+        "webhook_url": "https://hooks.example.com/cub"
+      }
+    },
+    {
+      "id": "SSFB",
+      "name": "Suryoday Small Finance Bank",
+      "description": "Suryoday Small Finance Bank file processing",
+      "sftp": {
+        "host": "sftp.ssfb.example.com",
+        "port": 22,
+        "username": "ssfb_user",
+        "remote_paths": [
+          "/data/incoming"
+        ]
+      },
+      "file_patterns": {
+        "transaction": "SSFB_YYYYMMDD_HHMMSS_TXN.csv",
+        "settlement": "SSFB_YYYYMMDD_HHMMSS_SETTLE.csv",
+        "report": "SSFB_YYYYMMDD_HHMMSS_RPT.csv"
+      },
+      "validation": {
+        "regex": "^SSFB_\\d{8}_\\d{6}_(TXN|SETTLE|RPT)\\.csv$",
+        "min_size_bytes": 100,
+        "max_size_bytes": 104857600,
+        "max_age_hours": 24,
+        "expected_extensions": [".csv"]
+      },
+      "schedule": {
+        "check_interval_minutes": 15,
+        "expected_files": [
+          {
+            "name": "TXN",
+            "frequency": "daily",
+            "expected_time": "08:30"
+          },
+          {
+            "name": "SETTLE",
+            "frequency": "daily",
+            "expected_time": "17:30"
+          },
+          {
+            "name": "RPT",
+            "frequency": "daily",
+            "expected_time": "19:00"
+          }
+        ]
+      },
+      "alerts": {
+        "slack_channel": "#ssfb-alerts",
+        "email_recipients": ["admin@42cards.com", "finance@42cards.com"],
+        "webhook_url": "https://hooks.example.com/ssfb"
+      }
+    }
+  ],
+  "global_settings": {
+    "retry_attempts": 3,
+    "retry_delay_seconds": 60,
+    "download_directory": "./downloads",
+    "archive_directory": "./archive",
+    "log_level": "INFO",
+    "enable_email_alerts": true,
+    "enable_slack_alerts": true,
+    "enable_webhook_alerts": true
+  }
+}

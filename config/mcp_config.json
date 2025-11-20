@@ -1,0 +1,14 @@
+{
+  "mcpServers": {
+    "banking-sftp-monitor": {
+      "command": "python",
+      "args": [
+        "-m",
+        "src.mcp_server.server"
+      ],
+      "env": {
+        "PYTHONPATH": "${workspaceFolder}"
+      }
+    }
+  }
+}

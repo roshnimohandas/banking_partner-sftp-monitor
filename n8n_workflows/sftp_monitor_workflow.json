@@ -1,0 +1,293 @@
+{
+  "name": "Banking Partner SFTP Monitor",
+  "nodes": [
+    {
+      "parameters": {
+        "rule": {
+          "interval": [
+            {
+              "field": "minutes",
+              "minutesInterval": 15
+            }
+          ]
+        }
+      },
+      "id": "schedule-trigger",
+      "name": "Schedule Trigger",
+      "type": "n8n-nodes-base.scheduleTrigger",
+      "typeVersion": 1.1,
+      "position": [250, 300]
+    },
+    {
+      "parameters": {
+        "protocol": "sftp",
+        "host": "={{ $json.sftp_host }}",
+        "port": 22,
+        "username": "={{ $json.sftp_username }}",
+        "password": "={{ $json.sftp_password }}",
+        "operation": "list",
+        "path": "={{ $json.remote_path }}"
+      },
+      "id": "sftp-list-files",
+      "name": "SFTP List Files",
+      "type": "n8n-nodes-base.ftp",
+      "typeVersion": 1,
+      "position": [650, 300],
+      "credentials": {
+        "sftp": {
+          "id": "1",
+          "name": "SFTP Banking Partner"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "functionCode": "// Validate file naming conventions\nconst items = $input.all();\nconst validatedItems = [];\n\nfor (const item of items) {\n  const filename = item.json.name;\n  const partner = item.json.partner || 'GENERIC';\n  \n  // Naming patterns\n  const patterns = {\n    'CUB': /^CUB_\\d{8}_\\d{6}_(TRANSACTION|SETTLEMENT|REPORT)\\.csv$/,\n    'SSFB': /^SSFB_\\d{8}_\\d{6}_(TXN|SETTLE|RPT)\\.csv$/,\n    'GENERIC': /^[A-Z]+_\\d{8}_\\d{6}_[A-Z]+\\.(csv|txt|xlsx)$/\n  };\n  \n  const pattern = patterns[partner] || patterns['GENERIC'];\n  const isValid = pattern.test(filename);\n  \n  // File size validation\n  const fileSize = item.json.size || 0;\n  const minSize = 100; // 100 bytes\n  const maxSize = 100 * 1024 * 1024; // 100 MB\n  \n  const sizeValid = fileSize >= minSize && fileSize <= maxSize;\n  \n  // File age validation\n  const modifiedDate = new Date(item.json.modifyTime);\n  const ageHours = (Date.now() - modifiedDate) / (1000 * 60 * 60);\n  const ageValid = ageHours <= 24;\n  \n  const validation = {\n    filename: filename,\n    partner: partner,\n    size: fileSize,\n    modified: modifiedDate.toISOString(),\n    age_hours: ageHours,\n    naming_valid: isValid,\n    size_valid: sizeValid,\n    age_valid: ageValid,\n    overall_valid: isValid && sizeValid,\n    errors: []\n  };\n  \n  if (!isValid) {\n    validation.errors.push('Invalid filename pattern');\n  }\n  if (!sizeValid) {\n    validation.errors.push(`Invalid file size: ${fileSize} bytes`);\n  }\n  if (!ageValid) {\n    validation.warnings = [`File is ${ageHours.toFixed(1)} hours old`];\n  }\n  \n  validatedItems.push({\n    json: validation\n  });\n}\n\nreturn validatedItems;"
+      },
+      "id": "validate-files",
+      "name": "Validate Files",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [850, 300]
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "boolean": [
+            {
+              "value1": "={{ $json.overall_valid }}",
+              "value2": false
+            }
+          ]
+        }
+      },
+      "id": "filter-invalid",
+      "name": "Filter Invalid Files",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 1,
+      "position": [1050, 300]
+    },
+    {
+      "parameters": {
+        "channel": "={{ $json.slack_channel }}",
+        "text": "=⚠️ *Invalid File Detected*\\n\\n*File:* {{ $json.filename }}\\n*Partner:* {{ $json.partner }}\\n*Size:* {{ $json.size }} bytes\\n*Modified:* {{ $json.modified }}\\n\\n*Errors:*\\n{{ $json.errors.join('\\n') }}",
+        "otherOptions": {}
+      },
+      "id": "slack-alert",
+      "name": "Send Slack Alert",
+      "type": "n8n-nodes-base.slack",
+      "typeVersion": 2.1,
+      "position": [1250, 200],
+      "credentials": {
+        "slackApi": {
+          "id": "2",
+          "name": "Slack API"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "fromEmail": "={{ $json.email_from }}",
+        "toEmail": "={{ $json.email_to }}",
+        "subject": "=SFTP Alert: Invalid File - {{ $json.filename }}",
+        "emailFormat": "html",
+        "text": "=<h2>Invalid File Detected</h2>\\n<p><strong>Filename:</strong> {{ $json.filename }}</p>\\n<p><strong>Partner:</strong> {{ $json.partner }}</p>\\n<p><strong>Size:</strong> {{ $json.size }} bytes</p>\\n<p><strong>Modified:</strong> {{ $json.modified }}</p>\\n<h3>Errors:</h3>\\n<ul>\\n{{ $json.errors.map(e => '<li>' + e + '</li>').join('') }}\\n</ul>"
+      },
+      "id": "email-alert",
+      "name": "Send Email Alert",
+      "type": "n8n-nodes-base.emailSend",
+      "typeVersion": 2,
+      "position": [1250, 400],
+      "credentials": {
+        "smtp": {
+          "id": "3",
+          "name": "SMTP"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "={{ $json.webhook_url }}",
+        "options": {},
+        "bodyParametersJson": "={{ JSON.stringify($json) }}"
+      },
+      "id": "webhook-notification",
+      "name": "Webhook Notification",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.1,
+      "position": [1250, 600]
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "name": "sftp_host",
+              "value": "={{ $env.SFTP_HOST }}",
+              "type": "string"
+            },
+            {
+              "name": "sftp_username",
+              "value": "={{ $env.SFTP_USERNAME }}",
+              "type": "string"
+            },
+            {
+              "name": "sftp_password",
+              "value": "={{ $env.SFTP_PASSWORD }}",
+              "type": "string"
+            },
+            {
+              "name": "remote_path",
+              "value": "/incoming",
+              "type": "string"
+            },
+            {
+              "name": "partner",
+              "value": "CUB",
+              "type": "string"
+            },
+            {
+              "name": "slack_channel",
+              "value": "={{ $env.SLACK_CHANNEL }}",
+              "type": "string"
+            },
+            {
+              "name": "email_from",
+              "value": "={{ $env.EMAIL_FROM }}",
+              "type": "string"
+            },
+            {
+              "name": "email_to",
+              "value": "={{ $env.EMAIL_TO }}",
+              "type": "string"
+            },
+            {
+              "name": "webhook_url",
+              "value": "={{ $env.WEBHOOK_URL }}",
+              "type": "string"
+            }
+          ]
+        }
+      },
+      "id": "load-config",
+      "name": "Load Configuration",
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.2,
+      "position": [450, 300]
+    },
+    {
+      "parameters": {
+        "operation": "aggregateItems",
+        "aggregate": "aggregateAllItemData",
+        "options": {}
+      },
+      "id": "aggregate-results",
+      "name": "Aggregate Results",
+      "type": "n8n-nodes-base.aggregate",
+      "typeVersion": 1,
+      "position": [1050, 500]
+    },
+    {
+      "parameters": {
+        "functionCode": "// Generate monitoring summary\nconst items = $input.all();\n\nconst summary = {\n  total_files: items.length,\n  valid_files: items.filter(i => i.json.overall_valid).length,\n  invalid_files: items.filter(i => !i.json.overall_valid).length,\n  timestamp: new Date().toISOString(),\n  partner: items[0]?.json.partner || 'UNKNOWN'\n};\n\nreturn [{ json: summary }];"
+      },
+      "id": "generate-summary",
+      "name": "Generate Summary",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [1250, 500]
+    }
+  ],
+  "connections": {
+    "Schedule Trigger": {
+      "main": [
+        [
+          {
+            "node": "Load Configuration",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Load Configuration": {
+      "main": [
+        [
+          {
+            "node": "SFTP List Files",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "SFTP List Files": {
+      "main": [
+        [
+          {
+            "node": "Validate Files",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Validate Files": {
+      "main": [
+        [
+          {
+            "node": "Filter Invalid Files",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Aggregate Results",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Filter Invalid Files": {
+      "main": [
+        [
+          {
+            "node": "Send Slack Alert",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Send Email Alert",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Webhook Notification",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Aggregate Results": {
+      "main": [
+        [
+          {
+            "node": "Generate Summary",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "staticData": null,
+  "tags": [],
+  "triggerCount": 1,
+  "updatedAt": "2025-11-20T00:00:00.000Z",
+  "versionId": "1"
+}

@@ -1,0 +1,344 @@
+{
+  "name": "CUB Daily Reports Monitor",
+  "nodes": [
+    {
+      "parameters": {
+        "rule": {
+          "interval": [
+            {
+              "field": "cronExpression",
+              "expression": "0 10,15 * * *"
+            }
+          ]
+        }
+      },
+      "id": "schedule-trigger",
+      "name": "Schedule (10 AM, 3 PM IST)",
+      "type": "n8n-nodes-base.scheduleTrigger",
+      "typeVersion": 1.1,
+      "position": [250, 300]
+    },
+    {
+      "parameters": {
+        "values": {
+          "string": [
+            {
+              "name": "partner",
+              "value": "CUB"
+            },
+            {
+              "name": "current_time",
+              "value": "={{ $now.toFormat('HH:mm') }}"
+            },
+            {
+              "name": "current_date",
+              "value": "={{ $now.toFormat('yyyyMMdd') }}"
+            },
+            {
+              "name": "expected_time",
+              "value": "={{ $now.hour >= 15 ? '15:00' : '10:00' }}"
+            }
+          ]
+        }
+      },
+      "id": "set-variables",
+      "name": "Set Variables",
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.2,
+      "position": [450, 300]
+    },
+    {
+      "parameters": {
+        "protocol": "sftp",
+        "host": "={{ $env.SFTP_CUB_HOST }}",
+        "port": 22,
+        "username": "={{ $env.SFTP_CUB_USERNAME }}",
+        "password": "={{ $env.SFTP_CUB_PASSWORD }}",
+        "operation": "list",
+        "path": "/sftp/cub/cic_reports/"
+      },
+      "id": "check-cic-reports",
+      "name": "Check CIC Reports",
+      "type": "n8n-nodes-base.ftp",
+      "typeVersion": 1,
+      "position": [650, 200]
+    },
+    {
+      "parameters": {
+        "protocol": "sftp",
+        "host": "={{ $env.SFTP_CUB_HOST }}",
+        "port": 22,
+        "username": "={{ $env.SFTP_CUB_USERNAME }}",
+        "password": "={{ $env.SFTP_CUB_PASSWORD }}",
+        "operation": "list",
+        "path": "/sftp/cub/account_master/"
+      },
+      "id": "check-account-master",
+      "name": "Check Account Master",
+      "type": "n8n-nodes-base.ftp",
+      "typeVersion": 1,
+      "position": [650, 400]
+    },
+    {
+      "parameters": {
+        "functionCode": "const items = $input.all();\nconst currentDate = $('Set Variables').item.json.current_date;\nconst partner = $('Set Variables').item.json.partner;\nconst reportType = $node.name.includes('CIC') ? 'CIC_REPORT' : 'ACCOUNT_MASTER';\n\n// Expected pattern: CUB_CIC_REPORT_20241120.csv\nconst expectedPattern = new RegExp(`^${partner}_${reportType}_${currentDate}\\\\.csv$`);\n\nconst validFiles = items.filter(item => {\n  const filename = item.json.name;\n  return expectedPattern.test(filename) && item.json.size > 0;\n});\n\nif (validFiles.length > 0) {\n  const file = validFiles[0].json;\n  return [{\n    json: {\n      file_found: true,\n      filename: file.name,\n      size: file.size,\n      size_mb: (file.size / 1024 / 1024).toFixed(2),\n      modified_time: new Date(file.modifyTime).toISOString(),\n      actual_time: new Date(file.modifyTime).toLocaleTimeString('en-IN', { timeZone: 'Asia/Kolkata' }),\n      report_type: reportType,\n      partner: partner,\n      validation: 'Valid',\n      status: '✅ On Time'\n    }\n  }];\n} else {\n  return [{\n    json: {\n      file_found: false,\n      filename: `${partner}_${reportType}_${currentDate}.csv`,\n      size: 0,\n      size_mb: '0',\n      modified_time: null,\n      actual_time: '-',\n      report_type: reportType,\n      partner: partner,\n      validation: 'Missing',\n      status: '❌ Missing'\n    }\n  }];\n}"
+      },
+      "id": "validate-cic",
+      "name": "Validate CIC Report",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [850, 200]
+    },
+    {
+      "parameters": {
+        "functionCode": "const items = $input.all();\nconst currentDate = $('Set Variables').item.json.current_date;\nconst partner = $('Set Variables').item.json.partner;\nconst reportType = 'ACCOUNT_MASTER';\n\nconst expectedPattern = new RegExp(`^${partner}_${reportType}_${currentDate}\\\\.csv$`);\n\nconst validFiles = items.filter(item => {\n  const filename = item.json.name;\n  return expectedPattern.test(filename) && item.json.size > 0;\n});\n\nif (validFiles.length > 0) {\n  const file = validFiles[0].json;\n  return [{\n    json: {\n      file_found: true,\n      filename: file.name,\n      size: file.size,\n      size_mb: (file.size / 1024 / 1024).toFixed(2),\n      modified_time: new Date(file.modifyTime).toISOString(),\n      actual_time: new Date(file.modifyTime).toLocaleTimeString('en-IN', { timeZone: 'Asia/Kolkata' }),\n      report_type: reportType,\n      partner: partner,\n      validation: 'Valid',\n      status: '✅ On Time'\n    }\n  }];\n} else {\n  return [{\n    json: {\n      file_found: false,\n      filename: `${partner}_${reportType}_${currentDate}.csv`,\n      size: 0,\n      size_mb: '0',\n      modified_time: null,\n      actual_time: '-',\n      report_type: reportType,\n      partner: partner,\n      validation: 'Missing',\n      status: '❌ Missing'\n    }\n  }];\n}"
+      },
+      "id": "validate-account",
+      "name": "Validate Account Master",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [850, 400]
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "boolean": [
+            {
+              "value1": "={{ $json.file_found }}",
+              "value2": true
+            }
+          ]
+        }
+      },
+      "id": "check-if-valid",
+      "name": "File Valid?",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 1,
+      "position": [1050, 300]
+    },
+    {
+      "parameters": {
+        "channel": "#42cards-data-ops",
+        "text": "=✅ {{ $json.partner }} {{ $json.report_type }} received - {{ $json.size_mb }} MB\n\n📁 File: {{ $json.filename }}\n⏰ Received at: {{ $json.actual_time }}\n✅ Status: Valid",
+        "otherOptions": {}
+      },
+      "id": "slack-success",
+      "name": "Slack Success Alert",
+      "type": "n8n-nodes-base.slack",
+      "typeVersion": 2.1,
+      "position": [1250, 200],
+      "credentials": {
+        "slackApi": {
+          "id": "1",
+          "name": "Slack API"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "channel": "#42cards-data-ops",
+        "text": "=@channel ❌ {{ $json.partner }} {{ $json.report_type }} MISSING\n\n📁 Expected File: {{ $json.filename }}\n⏰ Expected at: {{ $('Set Variables').item.json.expected_time }}\n🕐 Current Time: {{ $('Set Variables').item.json.current_time }}\n❌ Status: File Not Found\n\n⚠️ Action Required: Please check the SFTP server",
+        "otherOptions": {}
+      },
+      "id": "slack-error",
+      "name": "Slack Error Alert (@channel)",
+      "type": "n8n-nodes-base.slack",
+      "typeVersion": 2.1,
+      "position": [1250, 400],
+      "credentials": {
+        "slackApi": {
+          "id": "1",
+          "name": "Slack API"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "fromEmail": "={{ $env.EMAIL_FROM }}",
+        "toEmail": "={{ $env.EMAIL_TO }}",
+        "subject": "=🚨 URGENT: {{ $json.partner }} {{ $json.report_type }} Missing",
+        "emailFormat": "html",
+        "text": "=<h2>🚨 File Missing Alert</h2>\n<p><strong>Partner:</strong> {{ $json.partner }}</p>\n<p><strong>Report Type:</strong> {{ $json.report_type }}</p>\n<p><strong>Expected File:</strong> {{ $json.filename }}</p>\n<p><strong>Expected Time:</strong> {{ $('Set Variables').item.json.expected_time }}</p>\n<p><strong>Current Time:</strong> {{ $('Set Variables').item.json.current_time }}</p>\n<p><strong>Status:</strong> ❌ File Not Found</p>\n<hr>\n<p><strong>Action Required:</strong> Please check the SFTP server and verify file delivery.</p>\n<p><strong>SFTP Path:</strong> /sftp/cub/{{ $json.report_type.toLowerCase() }}/</p>"
+      },
+      "id": "email-alert",
+      "name": "Email Data Team",
+      "type": "n8n-nodes-base.emailSend",
+      "typeVersion": 2,
+      "position": [1250, 500],
+      "credentials": {
+        "smtp": {
+          "id": "2",
+          "name": "SMTP"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "authentication": "serviceAccount",
+        "resource": "sheet",
+        "operation": "appendOrUpdate",
+        "documentId": {
+          "__rl": true,
+          "value": "={{ $env.GOOGLE_SHEET_ID }}",
+          "mode": "id"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": "Tracking",
+          "mode": "name"
+        },
+        "dataMode": "autoMapInputData",
+        "options": {
+          "dataLocationOnSheet": "append"
+        },
+        "columns": {\n          "mappings": [\n            {\n              "fromColumn": "date",\n              "toColumn": "Date"\n            },\n            {\n              "fromColumn": "partner",\n              "toColumn": "Partner"\n            },\n            {\n              "fromColumn": "report_type",\n              "toColumn": "Report"\n            },\n            {\n              "fromColumn": "expected_time",\n              "toColumn": "Expected Time"\n            },\n            {\n              "fromColumn": "actual_time",\n              "toColumn": "Actual Time"\n            },\n            {\n              "fromColumn": "status",\n              "toColumn": "Status"\n            },\n            {\n              "fromColumn": "size_mb",\n              "toColumn": "Size"\n            },\n            {\n              "fromColumn": "alerts_sent",\n              "toColumn": "Alerts Sent"\n            }\n          ]\n        }
+      },
+      "id": "log-to-sheet",
+      "name": "Log to Google Sheets",
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.4,
+      "position": [1450, 300],
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "3",
+          "name": "Google Sheets"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "functionCode": "const items = $input.all();\nconst expectedTime = $('Set Variables').item.json.expected_time;\nconst currentDate = $('Set Variables').item.json.current_date;\n\nreturn items.map(item => ({\n  json: {\n    date: `${currentDate.slice(0,4)}-${currentDate.slice(4,6)}-${currentDate.slice(6,8)}`,\n    partner: item.json.partner,\n    report_type: item.json.report_type,\n    expected_time: expectedTime,\n    actual_time: item.json.actual_time,\n    status: item.json.status,\n    size_mb: item.json.size_mb + ' MB',\n    alerts_sent: item.json.file_found ? '0' : '2',\n    filename: item.json.filename,\n    validation: item.json.validation\n  }\n}));"
+      },
+      "id": "prepare-sheet-data",
+      "name": "Prepare Sheet Data",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [1250, 300]
+    }
+  ],
+  "connections": {
+    "Schedule (10 AM, 3 PM IST)": {
+      "main": [
+        [
+          {
+            "node": "Set Variables",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Set Variables": {
+      "main": [
+        [
+          {
+            "node": "Check CIC Reports",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Check Account Master",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Check CIC Reports": {
+      "main": [
+        [
+          {
+            "node": "Validate CIC Report",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Check Account Master": {
+      "main": [
+        [
+          {
+            "node": "Validate Account Master",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Validate CIC Report": {
+      "main": [
+        [
+          {
+            "node": "File Valid?",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Validate Account Master": {
+      "main": [
+        [
+          {
+            "node": "File Valid?",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "File Valid?": {
+      "main": [
+        [
+          {
+            "node": "Slack Success Alert",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Prepare Sheet Data",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Slack Error Alert (@channel)",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Email Data Team",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Prepare Sheet Data",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Prepare Sheet Data": {
+      "main": [
+        [
+          {
+            "node": "Log to Google Sheets",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "staticData": null,
+  "tags": [],
+  "triggerCount": 1,
+  "updatedAt": "2025-11-20T00:00:00.000Z",
+  "versionId": "1"
+}
