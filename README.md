@@ -4,7 +4,7 @@ Automated SFTP file monitoring system for banking partner file validation and al
 
 ## 📋 Overview
 
-This project provides a comprehensive solution for monitoring SFTP folders where banking partner files (CUB, SSFB, etc.) are placed. It validates files against regulatory patterns, checks file metadata, and sends alerts when issues are detected.
+This project provides a comprehensive solution for monitoring SFTP folders where banking partner files (PARTNER_A, PARTNER_B, etc.) are placed. It validates files against regulatory patterns, checks file metadata, and sends alerts when issues are detected.
 
 ## ✨ Features
 
@@ -125,8 +125,8 @@ Edit `config/partners.json` with your banking partner details:
 {
   "partners": [
     {
-      "id": "CUB",
-      "name": "City Union Bank",
+      "id": "PARTNER_A",
+      "name": "Banking Partner A",
       "sftp": {
         "host": "your-sftp-host.com",
         "username": "your-username"
@@ -218,7 +218,7 @@ with SFTPClient(
     files = client.list_files("/incoming")
 
     # Validate files
-    validator = FileValidator(partner="CUB")
+    validator = FileValidator(partner="PARTNER_A")
     for file in files:
         result = validator.validate_all(
             filename=file['filename'],
@@ -288,12 +288,12 @@ WEB_PORT=5000
 
 ### File Naming Conventions
 
-**CUB (City Union Bank):**
+**PARTNER_A (Banking Partner A):**
 - Pattern: `CUB_YYYYMMDD_HHMMSS_TYPE.csv`
 - Example: `CUB_20231120_143000_TRANSACTION.csv`
 - Types: TRANSACTION, SETTLEMENT, REPORT
 
-**SSFB (Suryoday Small Finance Bank):**
+**PARTNER_B (Banking Partner B):**
 - Pattern: `SSFB_YYYYMMDD_HHMMSS_TYPE.csv`
 - Example: `SSFB_20231120_143000_TXN.csv`
 - Types: TXN, SETTLE, RPT
@@ -426,7 +426,7 @@ This project is licensed under the MIT License.
 
 For issues and questions:
 - Create an issue in the repository
-- Email: support@42cards.com
+- Email: support@company.com
 
 ## 🙏 Acknowledgments
 

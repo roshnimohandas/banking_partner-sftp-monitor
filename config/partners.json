@@ -1,13 +1,13 @@
 {
   "partners": [
     {
-      "id": "CUB",
-      "name": "City Union Bank",
-      "description": "City Union Bank file processing",
+      "id": "PARTNER_A",
+      "name": "Banking Partner A",
+      "description": "Banking Partner A file processing",
       "sftp": {
-        "host": "sftp.cub.example.com",
+        "host": "sftp.partner-a.example.com",
         "port": 22,
-        "username": "cub_user",
+        "username": "partner_a_user",
         "remote_paths": [
           "/incoming/transactions",
           "/incoming/settlements",
@@ -15,12 +15,12 @@
         ]
       },
       "file_patterns": {
-        "transaction": "CUB_YYYYMMDD_HHMMSS_TRANSACTION.csv",
-        "settlement": "CUB_YYYYMMDD_HHMMSS_SETTLEMENT.csv",
-        "report": "CUB_YYYYMMDD_HHMMSS_REPORT.csv"
+        "transaction": "PARTNER_A_YYYYMMDD_HHMMSS_TRANSACTION.csv",
+        "settlement": "PARTNER_A_YYYYMMDD_HHMMSS_SETTLEMENT.csv",
+        "report": "PARTNER_A_YYYYMMDD_HHMMSS_REPORT.csv"
       },
       "validation": {
-        "regex": "^CUB_\\d{8}_\\d{6}_(TRANSACTION|SETTLEMENT|REPORT)\\.csv$",
+        "regex": "^PARTNER_A_\\d{8}_\\d{6}_(TRANSACTION|SETTLEMENT|REPORT)\\.csv$",
         "min_size_bytes": 100,
         "max_size_bytes": 104857600,
         "max_age_hours": 24,
@@ -48,30 +48,30 @@
         ]
       },
       "alerts": {
-        "slack_channel": "#cub-alerts",
+        "slack_channel": "#partner-a-alerts",
         "email_recipients": ["admin@42cards.com", "finance@42cards.com"],
-        "webhook_url": "https://hooks.example.com/cub"
+        "webhook_url": "https://hooks.example.com/partner-a"
       }
     },
     {
-      "id": "SSFB",
-      "name": "Suryoday Small Finance Bank",
-      "description": "Suryoday Small Finance Bank file processing",
+      "id": "PARTNER_B",
+      "name": "Banking Partner B",
+      "description": "Banking Partner B file processing",
       "sftp": {
-        "host": "sftp.ssfb.example.com",
+        "host": "sftp.partner-b.example.com",
         "port": 22,
-        "username": "ssfb_user",
+        "username": "partner_b_user",
         "remote_paths": [
           "/data/incoming"
         ]
       },
       "file_patterns": {
-        "transaction": "SSFB_YYYYMMDD_HHMMSS_TXN.csv",
-        "settlement": "SSFB_YYYYMMDD_HHMMSS_SETTLE.csv",
-        "report": "SSFB_YYYYMMDD_HHMMSS_RPT.csv"
+        "transaction": "PARTNER_B_YYYYMMDD_HHMMSS_TXN.csv",
+        "settlement": "PARTNER_B_YYYYMMDD_HHMMSS_SETTLE.csv",
+        "report": "PARTNER_B_YYYYMMDD_HHMMSS_RPT.csv"
       },
       "validation": {
-        "regex": "^SSFB_\\d{8}_\\d{6}_(TXN|SETTLE|RPT)\\.csv$",
+        "regex": "^PARTNER_B_\\d{8}_\\d{6}_(TXN|SETTLE|RPT)\\.csv$",
         "min_size_bytes": 100,
         "max_size_bytes": 104857600,
         "max_age_hours": 24,
@@ -98,9 +98,9 @@
         ]
       },
       "alerts": {
-        "slack_channel": "#ssfb-alerts",
+        "slack_channel": "#partner-b-alerts",
         "email_recipients": ["admin@42cards.com", "finance@42cards.com"],
-        "webhook_url": "https://hooks.example.com/ssfb"
+        "webhook_url": "https://hooks.example.com/partner-b"
       }
     }
   ],

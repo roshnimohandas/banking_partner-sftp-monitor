@@ -66,7 +66,7 @@ with SFTPClient(
     print(f"Found {len(files)} files")
 
     # Validate files
-    validator = FileValidator(partner="CUB")
+    validator = FileValidator(partner="PARTNER_A")
     for file in files:
         result = validator.validate_all(
             filename=file['filename'],
@@ -112,7 +112,7 @@ curl -X POST http://localhost:5000/api/monitor/test \
   -H "Content-Type: application/json" \
   -d '{
     "remote_path": "/incoming",
-    "partner": "CUB"
+    "partner": "PARTNER_A"
   }'
 ```
 
@@ -124,13 +124,13 @@ from src.validators.file_validator import validate_file
 result = validate_file(
     filename="CUB_20241120_143000_TRANSACTION.csv",
     file_size=2048576,  # 2MB
-    partner="CUB"
+    partner="PARTNER_A"
 )
 
 print(result)
 # {
 #   'filename': 'CUB_20241120_143000_TRANSACTION.csv',
-#   'partner': 'CUB',
+#   'partner': 'PARTNER_A',
 #   'valid': True,
 #   'errors': [],
 #   'warnings': []
@@ -202,7 +202,7 @@ banking_partner-sftp-monitor/
 - 🚀 Deployment guide: [DEPLOYMENT.md](docs/DEPLOYMENT.md)
 - 📊 Google Sheets: [GOOGLE_SHEETS_SETUP.md](docs/GOOGLE_SHEETS_SETUP.md)
 - 🐛 Issues: Create GitHub issue
-- 📧 Email: support@42cards.com
+- 📧 Email: support@company.com
 
 ## What's Included
 
@@ -211,10 +211,10 @@ banking_partner-sftp-monitor/
 ✅ Flask web dashboard
 ✅ React monitoring dashboard
 ✅ MCP server for automation
-✅ n8n workflows (CUB Daily, SSFB Weekly, Ad-hoc)
+✅ n8n workflows (PARTNER_A Daily, PARTNER_B Weekly, Ad-hoc)
 ✅ Google Sheets integration
 ✅ Slack/Email alerts
-✅ Multi-partner support (CUB, SSFB)
+✅ Multi-partner support (PARTNER_A, PARTNER_B)
 ✅ Deployment guides
 
 ## Trial Limitations

@@ -1,5 +1,5 @@
 {
-  "name": "CUB Daily Reports Monitor",
+  "name": "PARTNER_A Daily Reports Monitor",
   "nodes": [
     {
       "parameters": {
@@ -24,7 +24,7 @@
           "string": [
             {
               "name": "partner",
-              "value": "CUB"
+              "value": "PARTNER_A"
             },
             {
               "name": "current_time",

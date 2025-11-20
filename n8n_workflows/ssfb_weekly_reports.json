@@ -1,5 +1,5 @@
 {
-  "name": "SSFB Weekly Reports Monitor",
+  "name": "PARTNER_B Weekly Reports Monitor",
   "nodes": [
     {
       "parameters": {
@@ -24,7 +24,7 @@
           "string": [
             {
               "name": "partner",
-              "value": "SSFB"
+              "value": "PARTNER_B"
             },
             {
               "name": "current_time",

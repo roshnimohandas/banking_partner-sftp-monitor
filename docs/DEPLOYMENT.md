@@ -315,16 +315,16 @@ n8n
 Create production `.env` file:
 
 ```bash
-# SFTP - CUB
+# SFTP - PARTNER_A
 SFTP_CUB_HOST=prod-sftp.cub.com
 SFTP_CUB_PORT=22
-SFTP_CUB_USERNAME=42cards_prod
+SFTP_CUB_USERNAME=company_prod
 SFTP_CUB_PASSWORD=secure_password
 
-# SFTP - SSFB
+# SFTP - PARTNER_B
 SFTP_SSFB_HOST=prod-sftp.ssfb.com
 SFTP_SSFB_PORT=22
-SFTP_SSFB_USERNAME=42cards_prod
+SFTP_SSFB_USERNAME=company_prod
 SFTP_SSFB_PASSWORD=secure_password
 
 # Slack
@@ -334,8 +334,8 @@ SLACK_CHANNEL_ID=C01234567
 # Email
 EMAIL_SMTP_HOST=smtp.gmail.com
 EMAIL_SMTP_PORT=587
-EMAIL_FROM=alerts@42cards.com
-EMAIL_TO=admin@42cards.com,finance@42cards.com
+EMAIL_FROM=alerts@company.com
+EMAIL_TO=admin@company.com,finance@company.com
 EMAIL_PASSWORD=app_password
 
 # Google Sheets
@@ -540,4 +540,4 @@ pm2 restart all
 - **Documentation**: Check `/docs` folder
 - **Logs**: Review application logs
 - **Issues**: Create GitHub issue
-- **Email**: support@42cards.com
+- **Email**: support@company.com

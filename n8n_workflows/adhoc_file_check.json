@@ -15,7 +15,7 @@
           "string": [
             {
               "name": "partner",
-              "value": "={{ $json.partner || 'CUB' }}"
+              "value": "={{ $json.partner || 'PARTNER_A' }}"
             },
             {
               "name": "report_type",

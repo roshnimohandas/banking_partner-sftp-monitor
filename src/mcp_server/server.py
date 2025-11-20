@@ -133,7 +133,7 @@ async def list_tools() -> list[Tool]:
                     },
                     "partner": {
                         "type": "string",
-                        "description": "Banking partner code (CUB, SSFB, GENERIC)",
+                        "description": "Banking partner code (PARTNER_A, PARTNER_B, GENERIC)",
                         "default": "GENERIC"
                     }
                 },
@@ -180,7 +180,7 @@ async def list_tools() -> list[Tool]:
                     },
                     "partner": {
                         "type": "string",
-                        "description": "Banking partner code (CUB, SSFB, GENERIC)",
+                        "description": "Banking partner code (PARTNER_A, PARTNER_B, GENERIC)",
                         "default": "GENERIC"
                     },
                     "expected_patterns": {

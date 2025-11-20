@@ -13,15 +13,15 @@ class FileValidator:
 
     # File naming patterns for different banking partners
     NAMING_PATTERNS = {
-        'CUB': {
-            'pattern': r'^CUB_\d{8}_\d{6}_(TRANSACTION|SETTLEMENT|REPORT)\.csv$',
-            'description': 'CUB_YYYYMMDD_HHMMSS_TYPE.csv',
-            'example': 'CUB_20231120_143000_TRANSACTION.csv'
+        'PARTNER_A': {
+            'pattern': r'^PARTNER_A_\d{8}_\d{6}_(TRANSACTION|SETTLEMENT|REPORT)\.csv$',
+            'description': 'PARTNER_A_YYYYMMDD_HHMMSS_TYPE.csv',
+            'example': 'PARTNER_A_20231120_143000_TRANSACTION.csv'
         },
-        'SSFB': {
-            'pattern': r'^SSFB_\d{8}_\d{6}_(TXN|SETTLE|RPT)\.csv$',
-            'description': 'SSFB_YYYYMMDD_HHMMSS_TYPE.csv',
-            'example': 'SSFB_20231120_143000_TXN.csv'
+        'PARTNER_B': {
+            'pattern': r'^PARTNER_B_\d{8}_\d{6}_(TXN|SETTLE|RPT)\.csv$',
+            'description': 'PARTNER_B_YYYYMMDD_HHMMSS_TYPE.csv',
+            'example': 'PARTNER_B_20231120_143000_TXN.csv'
         },
         'GENERIC': {
             'pattern': r'^[A-Z]+_\d{8}_\d{6}_[A-Z]+\.(csv|txt|xlsx)$',
@@ -42,7 +42,7 @@ class FileValidator:
         Initialize validator for specific banking partner
 
         Args:
-            partner: Banking partner code (CUB, SSFB, GENERIC)
+            partner: Banking partner code (PARTNER_A, PARTNER_B, GENERIC)
         """
         self.partner = partner.upper()
         if self.partner not in self.NAMING_PATTERNS:

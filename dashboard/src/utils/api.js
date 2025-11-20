@@ -30,8 +30,8 @@ const getMockData = () => {
     lastUpdate: new Date().toISOString(),
     partners: [
       {
-        id: 'CUB',
-        name: 'City Union Bank',
+        id: 'PARTNER_A',
+        name: 'Banking Partner A',
         files: [
           {
             name: 'CIC Report',
@@ -60,8 +60,8 @@ const getMockData = () => {
         ]
       },
       {
-        id: 'SSFB',
-        name: 'Suryoday Small Finance Bank',
+        id: 'PARTNER_B',
+        name: 'Banking Partner B',
         files: [
           {
             name: 'CIC Report',

@@ -10,7 +10,7 @@ Create a new Google Sheet with the following sheets:
 
 | Column | Description | Example |
 |--------|-------------|---------|
-| Partner | Banking partner code | CUB |
+| Partner | Banking partner code | PARTNER_A |
 | File | File/Report type | CIC Report |
 | Status | Current status | ✅ Received |
 | Time | Actual received time | 14:02 |
@@ -24,10 +24,10 @@ Create a new Google Sheet with the following sheets:
 ```
 Partner | File        | Status       | Time  | Size  | Age | Expected | Last Updated
 --------|-------------|--------------|-------|-------|-----|----------|---------------
-CUB     | CIC         | ✅ Received  | 14:02 | 2.1MB | 2h  | 14:00    | 2024-11-20 16:30
-CUB     | AccMstr     | ✅ Received  | 09:15 | 1.8MB | 7h  | 09:00    | 2024-11-20 16:30
-SSFB    | CIC         | ⚠️ Delayed   | 15:45 | 3.2MB | 1h  | 15:00    | 2024-11-20 16:30
-SSFB    | AccMstr     | ❌ Missing   | -     | -     | -   | 16:00    | 2024-11-20 16:30
+PARTNER_A     | CIC         | ✅ Received  | 14:02 | 2.1MB | 2h  | 14:00    | 2024-11-20 16:30
+PARTNER_A     | AccMstr     | ✅ Received  | 09:15 | 1.8MB | 7h  | 09:00    | 2024-11-20 16:30
+PARTNER_B    | CIC         | ⚠️ Delayed   | 15:45 | 3.2MB | 1h  | 15:00    | 2024-11-20 16:30
+PARTNER_B    | AccMstr     | ❌ Missing   | -     | -     | -   | 16:00    | 2024-11-20 16:30
 ```
 
 ### Sheet 2: Historical Log

@@ -12,8 +12,8 @@ const Dashboard = ({ data }) => {
   // Mock data structure (this would come from your API/Google Sheets)
   const partners = data?.partners || [
     {
-      id: 'CUB',
-      name: 'City Union Bank',
+      id: 'PARTNER_A',
+      name: 'Banking Partner A',
       files: [
         {
           name: 'CIC Report',
@@ -42,8 +42,8 @@ const Dashboard = ({ data }) => {
       ]
     },
     {
-      id: 'SSFB',
-      name: 'Suryoday Small Finance Bank',
+      id: 'PARTNER_B',
+      name: 'Banking Partner B',
       files: [
         {
           name: 'CIC Report',
