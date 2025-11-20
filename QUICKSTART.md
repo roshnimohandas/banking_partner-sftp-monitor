@@ -122,14 +122,14 @@ curl -X POST http://localhost:5000/api/monitor/test \
 from src.validators.file_validator import validate_file
 
 result = validate_file(
-    filename="CUB_20241120_143000_TRANSACTION.csv",
+    filename="PARTNER_A_20241120_143000_TRANSACTION.csv",
     file_size=2048576,  # 2MB
     partner="PARTNER_A"
 )
 
 print(result)
 # {
-#   'filename': 'CUB_20241120_143000_TRANSACTION.csv',
+#   'filename': 'PARTNER_A_20241120_143000_TRANSACTION.csv',
 #   'partner': 'PARTNER_A',
 #   'valid': True,
 #   'errors': [],

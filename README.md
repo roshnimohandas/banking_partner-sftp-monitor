@@ -289,13 +289,13 @@ WEB_PORT=5000
 ### File Naming Conventions
 
 **PARTNER_A (Banking Partner A):**
-- Pattern: `CUB_YYYYMMDD_HHMMSS_TYPE.csv`
-- Example: `CUB_20231120_143000_TRANSACTION.csv`
+- Pattern: `PARTNER_A_YYYYMMDD_HHMMSS_TYPE.csv`
+- Example: `PARTNER_A_20231120_143000_TRANSACTION.csv`
 - Types: TRANSACTION, SETTLEMENT, REPORT
 
 **PARTNER_B (Banking Partner B):**
-- Pattern: `SSFB_YYYYMMDD_HHMMSS_TYPE.csv`
-- Example: `SSFB_20231120_143000_TXN.csv`
+- Pattern: `PARTNER_B_YYYYMMDD_HHMMSS_TYPE.csv`
+- Example: `PARTNER_B_20231120_143000_TXN.csv`
 - Types: TXN, SETTLE, RPT
 
 **Generic:**

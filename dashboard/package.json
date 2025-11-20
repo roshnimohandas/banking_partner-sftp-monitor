@@ -1,5 +1,5 @@
 {
-  "name": "42cards-sftp-dashboard",
+  "name": "company-sftp-dashboard",
   "version": "1.0.0",
   "description": "SFTP File Monitoring Dashboard for 42Cards",
   "private": true,

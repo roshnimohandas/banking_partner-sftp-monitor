@@ -73,7 +73,7 @@ Create charts using the data:
 ### 1. Create Google Cloud Project
 
 1. Go to [Google Cloud Console](https://console.cloud.google.com/)
-2. Create new project: "42cards-sftp-monitor"
+2. Create new project: "company-sftp-monitor"
 3. Enable Google Sheets API
 4. Enable Google Drive API (for file access)
 

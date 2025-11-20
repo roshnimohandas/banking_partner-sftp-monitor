@@ -23,7 +23,7 @@
             },
             {
               "name": "sftp_path",
-              "value": "={{ $json.sftp_path || '/sftp/cub/cic_reports/' }}"
+              "value": "={{ $json.sftp_path || '/sftp/partner_a/cic_reports/' }}"
             },
             {
               "name": "current_time",
@@ -44,7 +44,7 @@
     },
     {
       "parameters": {
-        "channel": "#42cards-data-ops",
+        "channel": "#data-ops",
         "text": "=📊 *Ad-Hoc File Check Complete*\n\nPartner: {{ $json.partner }}\nReport: {{ $json.report_type }}\nStatus: {{ $json.status }}\nValidation: {{ $json.validation }}",
         "otherOptions": {}
       },

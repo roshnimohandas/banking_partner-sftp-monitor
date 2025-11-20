@@ -120,7 +120,7 @@ sudo nano /etc/nginx/sites-available/sftp-monitor
 ```nginx
 server {
     listen 80;
-    server_name sftp-monitor.42cards.com;
+    server_name sftp-monitor.company.com;
 
     # React Dashboard
     location / {
@@ -173,7 +173,7 @@ pm2 startup
 
 ```bash
 sudo apt install certbot python3-certbot-nginx
-sudo certbot --nginx -d sftp-monitor.42cards.com
+sudo certbot --nginx -d sftp-monitor.company.com
 ```
 
 ---
@@ -316,16 +316,16 @@ Create production `.env` file:
 
 ```bash
 # SFTP - PARTNER_A
-SFTP_CUB_HOST=prod-sftp.cub.com
-SFTP_CUB_PORT=22
-SFTP_CUB_USERNAME=company_prod
-SFTP_CUB_PASSWORD=secure_password
+SFTP_PARTNER_A_HOST=prod-sftp.partner-a.com
+SFTP_PARTNER_A_PORT=22
+SFTP_PARTNER_A_USERNAME=company_prod
+SFTP_PARTNER_A_PASSWORD=secure_password
 
 # SFTP - PARTNER_B
-SFTP_SSFB_HOST=prod-sftp.ssfb.com
-SFTP_SSFB_PORT=22
-SFTP_SSFB_USERNAME=company_prod
-SFTP_SSFB_PASSWORD=secure_password
+SFTP_PARTNER_B_HOST=prod-sftp.partner-b.com
+SFTP_PARTNER_B_PORT=22
+SFTP_PARTNER_B_USERNAME=company_prod
+SFTP_PARTNER_B_PASSWORD=secure_password
 
 # Slack
 SLACK_BOT_TOKEN=xoxb-production-token
@@ -353,7 +353,7 @@ N8N_PROTOCOL=https
 N8N_BASIC_AUTH_ACTIVE=true
 N8N_BASIC_AUTH_USER=admin
 N8N_BASIC_AUTH_PASSWORD=secure-password
-WEBHOOK_URL=https://n8n.42cards.com/webhook
+WEBHOOK_URL=https://n8n.company.com/webhook
 ```
 
 ---

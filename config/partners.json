@@ -49,7 +49,7 @@
       },
       "alerts": {
         "slack_channel": "#partner-a-alerts",
-        "email_recipients": ["admin@42cards.com", "finance@42cards.com"],
+        "email_recipients": ["admin@company.com", "finance@company.com"],
         "webhook_url": "https://hooks.example.com/partner-a"
       }
     },
@@ -99,7 +99,7 @@
       },
       "alerts": {
         "slack_channel": "#partner-b-alerts",
-        "email_recipients": ["admin@42cards.com", "finance@42cards.com"],
+        "email_recipients": ["admin@company.com", "finance@company.com"],
         "webhook_url": "https://hooks.example.com/partner-b"
       }
     }
